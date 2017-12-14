@@ -43,7 +43,39 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
+	fmt.Print(post.PostId)
 	fileStmt, err := db.Prepare(`INSERT INTO posts (post_id) VALUES (?)`)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = fileStmt.Exec(post.PostId)
+
+	// if there is an error inserting, handle it
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer fileStmt.Close()
+
+	json.NewEncoder(w).Encode(post)
+}
+
+func DeletePost(w http.ResponseWriter, r *http.Request) {
+	var post Post
+	json.NewDecoder(r.Body).Decode(&post)
+
+	db, err := sql.Open("mysql", "tntest:EF.tn.t3sTdB@tcp(localhost)/test_db")
+
+	if err != nil {
+		fmt.Printf("Unable to open db: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	defer db.Close()
+
+	fileStmt, err := db.Prepare(`DELETE from posts where post_id = ?`)
 
 	_, err = fileStmt.Exec(post.PostId)
 
@@ -74,6 +106,8 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/posts", CreatePost).Methods("POST")
+	router.HandleFunc("/posts", DeletePost).Methods("DELETE")
+
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
