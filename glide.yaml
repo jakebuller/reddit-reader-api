@@ -1,3 +1,5 @@
 package: github.com/jakebuller/reddit-reader-api
 import:
 - package: github.com/gorilla/mux
+subpackages:
+  - dialects/mysql

@@ -43,18 +43,16 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	// perform a db.Query insert
-	query := fmt.Sprintf("INSERT INTO posts (post_id) VALUES ('%s')", post.PostId)
-	fmt.Print(query)
-	insert, err := db.Query(query)
+	fileStmt, err := db.Prepare(`INSERT INTO posts (post_id) VALUES (?)`)
 
+	_, err = fileStmt.Exec(post.PostId)
 
 	// if there is an error inserting, handle it
 	if err != nil {
 		panic(err.Error())
 	}
 
-	defer insert.Close()
+	defer fileStmt.Close()
 
 	json.NewEncoder(w).Encode(post)
 }
